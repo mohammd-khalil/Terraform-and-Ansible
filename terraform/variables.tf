@@ -37,5 +37,5 @@ variable "instance_type" {
 variable "my_ip" {
   description = "IP allowed to SSH into the instance"
   type        = string
-  default     = "156.197.162.26/32"
+  default     = "Specific IP"
 }
