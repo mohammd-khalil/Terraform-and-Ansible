@@ -14,7 +14,7 @@ provider "aws" {
 
 # S3 bucket لتخزين الـ state file
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "my-terraform-s3"
+  bucket = "my-terraform-s3bucket"
 
   lifecycle {
     prevent_destroy = true
