@@ -3,7 +3,7 @@ resource "aws_instance" "app_server" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ssh_access.id]
-  key_name = "terraform-key"
+  key_name               = "terraform-key"
 
   tags = {
     Name = "app-server"
