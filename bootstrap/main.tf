@@ -12,7 +12,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# S3 bucket لتخزين الـ state file
+# Configure remote backend
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "my-tf-s3bucket-2026"
 
@@ -21,7 +21,7 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 }
 
-# تفعيل versioning على البucket
+# Enable Versioning on S3 to allow using multiple versions of statefile
 resource "aws_s3_bucket_versioning" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
   versioning_configuration {
@@ -29,7 +29,7 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
-# تشفير الملفات جوا الـ bucket (server-side encryption)
+# Encrypt files in S3 bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
   rule {
@@ -39,7 +39,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
   }
 }
 
-# منع أي وصول عام للـ bucket
+# Prevent public access to the S3 bucket
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket                  = aws_s3_bucket.terraform_state.id
   block_public_acls       = true
@@ -48,7 +48,7 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
-# DynamoDB table للـ state locking (تمنع تعارض تشغيل apply من أكتر من حد في نفس الوقت)
+# Lock statefile using DynamoDB , to avoid conflict 
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "terraform-locks"
   billing_mode = "PAY_PER_REQUEST"
