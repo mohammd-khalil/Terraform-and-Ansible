@@ -25,7 +25,7 @@ variable "availability_zone" {
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
   type        = string
-  default     = "ami-0332d564d76dbd8d6"
+  default     = "ami-07b8fb6bd3e9627a6"
 }
 
 variable "instance_type" {
@@ -37,5 +37,5 @@ variable "instance_type" {
 variable "my_ip" {
   description = "IP allowed to SSH into the instance"
   type        = string
-  default     = "Specific IP"
+  default     = "156.197.244.242/32"
 }
