@@ -37,5 +37,11 @@ variable "instance_type" {
 variable "my_ip" {
   description = "IP allowed to SSH into the instance"
   type        = string
-  default     = "156.197.244.242/32"
+  #ip in Secrets
+}
+
+variable "key_name" {
+  description = "Name of the existing EC2 Key Pair (created manually in AWS Console, without .pem extension)"
+  type        = string
+  default     = "terraform-key"
 }

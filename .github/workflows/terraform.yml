@@ -35,7 +35,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
-
+    env:
+      TF_VAR_my_ip: ${{ secrets.MY_IP }}
     steps:
 
       - name: Checkout code
@@ -75,7 +76,7 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan 
 
 
   terraform-destroy:
@@ -86,6 +87,9 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    
+    env:
+      TF_VAR_my_ip: ${{ secrets.MY_IP }}
 
     steps:
 
