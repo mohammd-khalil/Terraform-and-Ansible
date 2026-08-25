@@ -7,7 +7,7 @@
 - name: Deploy custom index.html
   ansible.builtin.copy:
     src: index.html
-    dest: /var/www/html/index.html
+    dest: /usr/share/nginx/html/index.html
     owner: nginx
     group: nginx
     mode: "0644"
