@@ -138,6 +138,9 @@ jobs:
       - name: Run Ansible playbook
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: ${{ github.workspace }}/ansible
+        env:
+          ANSIBLE_PIPELINING: "True"
+          ANSIBLE_HOST_KEY_CHECKING: "False"
         run: ansible-playbook -i inventory.ini playbook.yaml
 
   terraform-destroy:
