@@ -147,7 +147,9 @@ jobs:
     defaults:
       run:
         working-directory: terraform
-
+    env:
+      TF_VAR_my_ip: ${{ secrets.MY_IP }}
+      TF_VAR_key_name: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
