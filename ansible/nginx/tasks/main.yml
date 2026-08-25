@@ -4,6 +4,14 @@
     name: nginx
     state: present # make sure nginx is installed
 
+- name: Change Nginx IPv4 port to 8080
+  ansible.builtin.replace:
+    path: /etc/nginx/nginx.conf
+    regexp: 'listen\s+80\b'
+    replace: 'listen 8080'
+  notify: Restart nginx
+
+
 - name: Deploy custom index.html
   ansible.builtin.copy:
     src: index.html
