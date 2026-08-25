@@ -7,9 +7,9 @@
 - name: Deploy custom index.html
   ansible.builtin.copy:
     src: index.html
-    dest: /usr/share/nginx/html/index.html
-    owner: root
-    group: root
+    dest: /var/www/html/index.html
+    owner: nginx
+    group: nginx
     mode: "0644"
   notify: Restart nginx   #when the index.html file is changed, restart nginx
 
