@@ -39,9 +39,12 @@ variable "my_ip" {
   type        = string
   #ip in Secrets
 }
-
+variable "runner_ip" {          # runner ip to open ssh on created ec2 instance
+  description = "IP address of the GitHub Actions Runner"
+  type        = string
+}
 variable "key_name" {
   description = "Name of the existing EC2 Key Pair (created manually in AWS Console, without .pem extension)"
   type        = string
-  default     = "terraform-key"
+  #import the key from Github secrets
 }

@@ -33,8 +33,12 @@ inside github repo add new secrets :
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `SNYK_TOKEN` -> To use snyk and check security of code 
+- `Secret-IP` -> Your public ip to open ssh
+- `EC2-private-key` -> The Private key , which is used to open ssh on the instance
 
 ### 3) Pipeline 
 Any push on main branch , will trigger the workflow : 
-`fmt check → Security check → init → validate → plan → apply`
+`fmt check → Security check → init → validate → plan → apply` -> 
+
+
 

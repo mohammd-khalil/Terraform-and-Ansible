@@ -10,7 +10,19 @@ resource "aws_security_group" "ssh_access" {
     protocol    = "tcp"
     cidr_blocks = [var.my_ip]
   }
-
+  ingress {
+    description = "Inbound traffic allowed from anyone on the internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${var.runner_ip}/32"] 
+  }
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0

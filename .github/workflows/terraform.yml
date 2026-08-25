@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - 'terraform/**'
-
+      - 'ansible/**'
   pull_request:
     branches: [main]
     paths:
       - 'terraform/**'
-
+      - 'ansible/**'
   workflow_dispatch:
     inputs:
       action:
@@ -26,22 +26,25 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-
   terraform:
     name: Terraform Plan & Apply
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'plan'
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: terraform
-    env:
-      TF_VAR_my_ip: ${{ secrets.MY_IP }}
-    steps:
 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
+      - name: Get Runner IP   # get the runner ip to open ssh on the instance
+        id: ip
+        uses: haythem/public-ip@v1.3
+      
+      - name: Set Runner IP as Environment Variable
+        run: echo "TF_VAR_runner_ip=${{ steps.ip.outputs.ipv4 }}" >> $GITHUB_ENV
+      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -62,7 +65,7 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
-      
+
       - name: Run Snyk IaC scan
         continue-on-error: true
         uses: snyk/actions/iac@master
@@ -76,23 +79,74 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve tfplan 
+        run: terraform apply -auto-approve tfplan
 
+      - name: Get instance info
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        id: ec2info
+        run: |
+          echo "ip=$(terraform output -raw instance_public_ip)" >> "$GITHUB_OUTPUT"
+          echo "id=$(terraform output -raw instance_id)" >> "$GITHUB_OUTPUT"
+          echo "az=$(terraform output -raw availability_zone)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for SSH port to be ready
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          for i in $(seq 1 30); do
+            nc -z -w5 ${{ steps.ec2info.outputs.ip }} 22 && echo "SSH port is up" && exit 0
+            echo "Waiting for SSH port... ($i/30)"
+            sleep 10
+          done
+          echo "SSH port did not become available in time"
+          exit 1
+
+      - name: Install Ansible      # install ansinble on the runner
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          pip install --user ansible                   # (steps runs on the runner , on non-interactive shell)
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Generate ephemeral SSH keypair          # generate a temporary SSH keypair to connect to the EC2 instance , so no need for my private key 
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ github.workspace }}/ansible
+        run: |
+          ssh-keygen -t ed25519 -f ec2_key -N "" -q
+          chmod 600 ec2_key      
+
+      - name: Push public key via EC2 Instance Connect
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ github.workspace }}/ansible
+        run: |
+          aws ec2-instance-connect send-ssh-public-key \
+            --instance-id ${{ steps.ec2info.outputs.id }} \
+            --instance-os-user ec2-user \
+            --ssh-public-key file://ec2_key.pub \
+            --availability-zone ${{ steps.ec2info.outputs.az }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Generate Ansible inventory
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ github.workspace }}/ansible
+        run: |
+          cat > inventory.ini << EOF
+          [web]
+          ${{ steps.ec2info.outputs.ip }} ansible_user=ec2-user ansible_ssh_private_key_file=ec2_key ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=120s'    # we can use the same keypair to open multiple SSH connections to the same host, and keep them open for 120 seconds
+          EOF
+
+      - name: Run Ansible playbook
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ github.workspace }}/ansible
+        run: ansible-playbook -i inventory.ini playbook.yaml
 
   terraform-destroy:
     name: Terraform Destroy
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: terraform
-    
-    env:
-      TF_VAR_my_ip: ${{ secrets.MY_IP }}
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 

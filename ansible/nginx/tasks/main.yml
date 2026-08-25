@@ -1,0 +1,20 @@
+---
+- name: Install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present # make sure nginx is installed
+
+- name: Deploy custom index.html
+  ansible.builtin.copy:
+    src: index.html
+    dest: /usr/share/nginx/html/index.html
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart nginx   #when the index.html file is changed, restart nginx
+
+- name: Ensure nginx is enabled and running
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true

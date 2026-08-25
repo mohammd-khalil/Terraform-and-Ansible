@@ -1,0 +1,7 @@
+---
+- name: Install and configure Nginx
+  hosts: web   # group name defined in the inventory file
+  become: true  # sudo privileges
+
+  roles:
+    - nginx
