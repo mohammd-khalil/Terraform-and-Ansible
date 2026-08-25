@@ -42,6 +42,7 @@ variable "my_ip" {
 variable "runner_ip" {          # runner ip to open ssh on created ec2 instance
   description = "IP address of the GitHub Actions Runner"
   type        = string
+  default     = "0.0.0.0"
 }
 variable "key_name" {
   description = "Name of the existing EC2 Key Pair (created manually in AWS Console, without .pem extension)"
