@@ -31,7 +31,7 @@ This project provides a complete automated CI/CD pipeline using GitHub Actions t
 │   ├── variables.tf
 │   └── vpc.tf
 └── README.md
-
+```
 
 ## Steps to Provision the Infrastructure
 
@@ -42,6 +42,7 @@ The DynamoDB table and S3 bucket must be created before triggering the pipeline 
 cd bootstrap
 terraform init
 terraform apply
+```
 
 ### 2. Prepare GitHub Secrets
 Inside your GitHub repository, navigate to **Settings > Secrets and variables > Actions** and add the following repository secrets:
